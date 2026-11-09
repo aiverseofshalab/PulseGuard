@@ -43,3 +43,4 @@ This document catalogues known platform constraints, intentional architectural b
 ### 3.2 Acoustic Quality Flags
 - **Silent Audio:** Audio with RMS energy below $-50\text{ dBFS}$ is flagged with `silent` status. The anomaly score is suppressed.
 - **Clipped Audio:** Audio with more than 1% saturated digital samples is flagged with `clipped` status to prevent artificial harmonic reconstruction distortion.
+

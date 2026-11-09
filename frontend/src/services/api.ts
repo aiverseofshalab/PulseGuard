@@ -201,10 +201,21 @@ export const api = {
     return request<{ scenarios: any[] }>("/simulator/scenarios");
   },
 
-  async triggerScenario(machineId: string, scenario: string): Promise<MachineTelemetry> {
+  async triggerScenario(
+    machineId: string,
+    scenario: string,
+    baseRpm?: number,
+    baseTemperature?: number,
+    baseVibration?: number
+  ): Promise<MachineTelemetry> {
     return request<MachineTelemetry>(`/simulator/machines/${machineId}/trigger`, {
       method: "POST",
-      body: JSON.stringify({ scenario }),
+      body: JSON.stringify({
+        scenario,
+        base_rpm: baseRpm,
+        base_temperature: baseTemperature,
+        base_vibration: baseVibration,
+      }),
     });
   },
 
@@ -236,6 +247,52 @@ export const api = {
 
   async getIotHealth(): Promise<any> {
     return request<any>("/health/iot");
+  },
+
+  async runDiagnosticsBattery(): Promise<any> {
+    return request<any>("/health/run", { method: "POST" });
+  },
+
+  async getDiagnosticHistory(limit = 10): Promise<any[]> {
+    return request<any[]>(`/health/history?limit=${limit}`);
+  },
+
+  // AI Explainability
+  async getExplainability(analysisId: string): Promise<any> {
+    return request<any>(`/analyses/${analysisId}/explainability`);
+  },
+
+  // Automated Maintenance Reports
+  async generateReport(analysisId: string): Promise<any> {
+    return request<any>(`/reports/generate/${analysisId}`, { method: "POST" });
+  },
+
+  async listReports(): Promise<any[]> {
+    return request<any[]>("/reports");
+  },
+
+  getReportDownloadUrl(reportId: string): string {
+    return `${API_BASE}/api/v1/reports/${reportId}/download`;
+  },
+
+  getDirectPdfUrl(analysisId: string): string {
+    return `${API_BASE}/api/v1/reports/analysis/${analysisId}/pdf`;
+  },
+
+  // Security Audit
+  async getAuditLogs(params?: { severity?: string; eventType?: string; search?: string; limit?: number; offset?: number }): Promise<any> {
+    const q = new URLSearchParams();
+    if (params?.severity) q.append("severity", params.severity);
+    if (params?.eventType) q.append("event_type", params.eventType);
+    if (params?.search) q.append("search", params.search);
+    if (params?.limit) q.append("limit", params.limit.toString());
+    if (params?.offset) q.append("offset", params.offset.toString());
+    const queryStr = q.toString() ? `?${q.toString()}` : "";
+    return request<any>(`/audit/logs${queryStr}`);
+  },
+
+  async getAuditSummary(): Promise<any> {
+    return request<any>("/audit/summary");
   },
 
   getExportCsvUrl(): string {

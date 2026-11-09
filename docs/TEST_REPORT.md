@@ -3,7 +3,7 @@
 **Date of Execution:** 2026-11-09  
 **Platform:** macOS Darwin 24.3.0, Python 3.14.0, Node.js v20+, Vite 5.4.21  
 **Execution Script:** `./scripts/run_all_tests.sh`  
-**Overall Result:** **100% PASSED (19/19 Pytest Cases + TypeScript Build Clean)**
+**Overall Result:** **100% PASSED (24/24 Pytest Cases + TypeScript Build Clean)**
 
 ---
 
@@ -13,20 +13,28 @@ PulseGuard underwent rigorous automated auditing across its full stack:
 - **Backend API & Data Layer:** Full pytest suite covering authentication, machine registry, diagnostics, telemetry, and reporting.
 - **Audio Preprocessing Pipeline:** Validated against sample rate conversion (44.1kHz -> 16kHz), stereo downmixing, silent audio rejection, clipped audio rejection, and corrupted binary rejection.
 - **Deep Learning Subsystem:** 4-Layer 2D ConvAutoencoder architecture validation, kNN distance calculator verification, and calibrated anomaly threshold scoring.
-- **Software IoT Simulation Subsystem:** API key authentication, live telemetry ingestion, simulated scenario triggers, and multi-modal health fusion.
-- **Frontend Architecture:** Full TypeScript compilation check (`tsc -b`), strict interface typing, React 18 production bundling via Vite.
+- **AI Explainability Subsystem:** Decomposes reconstruction residual errors across 3 distinct acoustic frequency sub-bands (Low: 0-2kHz, Mid: 2-4kHz, High: 4-8kHz) and synthesizes model evidence with IoT telemetry.
+- **Digital Twin Simulation Subsystem:** Evaluates nominal, overheat, excessive vibration, speed surge, combined abnormal operation, and manual slider overrides with live WebSocket streaming.
+- **Automated Report Generation:** Generates and validates official multi-page PDF maintenance reports using ReportLab with unique identifier (`PG-REP-YYYYMMDD-XXXX`).
+- **Security Audit & RBAC Governance:** Structured event logging, login tracking, device API key violation alerting, and RBAC enforcement.
+- **Frontend Architecture:** Full TypeScript compilation check (`tsc -b`), strict interface typing, React 18 production bundling via Vite (2,239 modules).
 
 ---
 
 ## 2. Test Execution Breakdown
 
-### 2.1 Backend Pytest Matrix (19 Passed / 0 Failed)
+### 2.1 Backend Pytest Matrix (24 Passed / 0 Failed)
 
 | Suite | Test Function | Purpose / Assertions | Status |
 | :--- | :--- | :--- | :--- |
+| `test_advanced_features.py` | `test_diagnostics_battery_and_history` | Tests active deep diagnostic battery (`/health/run`) and snapshot history retrieval (`/health/history`). | **PASSED** |
+| `test_advanced_features.py` | `test_digital_twin_scenarios_and_custom_controls` | Tests combined abnormal operation, direct manual slider parameter overrides, and emergency machine stop. | **PASSED** |
+| `test_advanced_features.py` | `test_ai_explainability_endpoint` | Validates frequency sub-band attribution (Low, Mid, High summing to ~100%), model-based evidence, and disclaimer. | **PASSED** |
+| `test_advanced_features.py` | `test_pdf_report_generation_and_download` | Tests PDF report generation (`POST /reports/generate`), listing, and valid `%PDF` binary streaming. | **PASSED** |
+| `test_advanced_features.py` | `test_security_audit_logging_and_rbac` | Tests engineer audit access, operator 403 Forbidden enforcement, and invalid API key security event logging. | **PASSED** |
 | `test_api.py` | `test_health_endpoints` | Tests `/api/v1/health` root probe returns HTTP 200 and healthy status. | **PASSED** |
 | `test_api.py` | `test_diagnostic_endpoints` | Tests `/health/live`, `/ready`, `/services`, `/ml`, `/iot` diagnostic probes. | **PASSED** |
-| `test_api.py` | `test_user_registration_and_auth_failures` | Tests registration, login, duplicate email rejection (409), invalid credentials (401), and JWT authorization. | **PASSED** |
+| `test_api.py` | `test_user_registration_and_auth_failures` | Tests registration, login, duplicate email rejection (400), invalid credentials (401), and JWT authorization. | **PASSED** |
 | `test_api.py` | `test_machine_lifecycle` | Tests creating an asset, listing assets, retrieving details, and editing metadata. | **PASSED** |
 | `test_api.py` | `test_dashboard_summary` | Tests aggregation metrics (total assets, active alerts, anomaly distribution). | **PASSED** |
 | `test_api.py` | `test_export_csv` | Tests CSV audit report generation with RFC-4180 compliance. | **PASSED** |
@@ -87,3 +95,4 @@ PYTHONPATH=. python3 -m pytest backend/tests -v
 # Frontend build only
 cd frontend && npm run build
 ```
+

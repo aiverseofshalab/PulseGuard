@@ -12,6 +12,7 @@ from backend.app.schemas.machine import (
     MachineListResponse,
 )
 from backend.app.api.deps import get_current_user
+from backend.app.services.audit_logger import log_security_event
 
 router = APIRouter()
 
@@ -79,6 +80,20 @@ def create_machine(
     db.add(machine)
     db.commit()
     db.refresh(machine)
+
+    log_security_event(
+        event_type="machine_created",
+        severity="info",
+        actor_type="user",
+        actor_id=current_user.email,
+        resource=f"/machines/{machine.id}",
+        status="success",
+        details={
+            "machine_identifier": machine.machine_identifier,
+            "machine_type": machine.machine_type,
+        },
+        db=db,
+    )
 
     return MachineResponse(
         id=machine.id,
@@ -190,7 +205,19 @@ def delete_machine(
     if not machine:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Machine not found.")
 
+    mach_identifier = machine.machine_identifier
     db.delete(machine)
     db.commit()
+
+    log_security_event(
+        event_type="machine_deleted",
+        severity="warning",
+        actor_type="user",
+        actor_id=current_user.email,
+        resource=f"/machines/{machine_id}",
+        status="success",
+        details={"machine_identifier": mach_identifier},
+        db=db,
+    )
     return None
 

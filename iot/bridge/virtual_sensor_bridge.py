@@ -60,6 +60,15 @@ SCENARIOS = {
         "vib_jitter": 8.0,
         "status": "critical",
     },
+    "combined_abnormal": {
+        "rpm_base": 3400.0,
+        "rpm_jitter": 150.0,
+        "temp_base": 91.0,
+        "temp_jitter": 4.0,
+        "vib_base": 88.0,
+        "vib_jitter": 6.0,
+        "status": "critical",
+    },
     "stopped": {
         "rpm_base": 0.0,
         "rpm_jitter": 0.0,

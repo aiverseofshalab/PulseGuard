@@ -5,6 +5,8 @@ from backend.app.models.user import User
 from backend.app.models.machine import Machine
 from backend.app.models.analysis import Analysis, AnalysisMetric, OperatorNote
 from backend.app.models.telemetry import MachineTelemetry
+from backend.app.models.audit import SecurityAuditLog
+from backend.app.models.diagnostic import DiagnosticSnapshot
 from backend.app.core.security import get_password_hash
 
 DEMO_USER_EMAIL = "demo@pulseguard.ai"
@@ -13,6 +15,80 @@ DEMO_USER_PASSWORD = "IndustrialDemo2026!"
 def seed_demo_data_if_empty(db: Session):
     existing_user = db.query(User).filter(User.email == DEMO_USER_EMAIL).first()
     if existing_user:
+        now = datetime.now(timezone.utc)
+        if db.query(SecurityAuditLog).count() == 0:
+            db.add_all([
+                SecurityAuditLog(
+                    timestamp=now - timedelta(days=2, hours=4),
+                    event_type="auth_registered",
+                    severity="info",
+                    actor_type="user",
+                    actor_id=DEMO_USER_EMAIL,
+                    ip_address="127.0.0.1",
+                    resource="/auth/register",
+                    status="success",
+                    details={"role": "engineer", "source": "system_bootstrap"},
+                ),
+                SecurityAuditLog(
+                    timestamp=now - timedelta(days=1, hours=8),
+                    event_type="auth_login_success",
+                    severity="info",
+                    actor_type="user",
+                    actor_id=DEMO_USER_EMAIL,
+                    ip_address="127.0.0.1",
+                    resource="/auth/login",
+                    status="success",
+                    details={"role": "engineer"},
+                ),
+                SecurityAuditLog(
+                    timestamp=now - timedelta(days=1, hours=2),
+                    event_type="machine_created",
+                    severity="info",
+                    actor_type="user",
+                    actor_id=DEMO_USER_EMAIL,
+                    ip_address="127.0.0.1",
+                    resource="/machines/FAN-BAY-01",
+                    status="success",
+                    details={"machine_identifier": "FAN-BAY-01", "machine_type": "fan"},
+                ),
+                SecurityAuditLog(
+                    timestamp=now - timedelta(hours=14),
+                    event_type="iot_api_key_invalid",
+                    severity="warning",
+                    actor_type="iot_device",
+                    actor_id="anonymous_bridge",
+                    ip_address="127.0.0.1",
+                    resource="/telemetry/ingest",
+                    status="failure",
+                    details={"reason": "Missing device credential on probe"},
+                ),
+                SecurityAuditLog(
+                    timestamp=now - timedelta(hours=6),
+                    event_type="scenario_injected",
+                    severity="info",
+                    actor_type="user",
+                    actor_id=DEMO_USER_EMAIL,
+                    ip_address="127.0.0.1",
+                    resource="/simulator/machines/FAN-BAY-01/trigger",
+                    status="success",
+                    details={"scenario": "normal", "machine_identifier": "FAN-BAY-01"},
+                ),
+            ])
+            db.commit()
+        if db.query(DiagnosticSnapshot).count() == 0:
+            db.add(DiagnosticSnapshot(
+                overall_status="Operational",
+                execution_time_ms=18.4,
+                results={
+                    "database": {"status": "Operational", "latency_ms": 1.1},
+                    "audio_preprocessing": {"status": "Operational", "latency_ms": 3.4},
+                    "ml_inference": {"status": "Operational", "latency_ms": 2.1},
+                    "dataset_availability": {"status": "Operational"},
+                    "environment_configuration": {"status": "Operational"},
+                },
+                created_at=now - timedelta(hours=1),
+            ))
+            db.commit()
         return existing_user
 
     print("[INFO] Seeding initial industrial demonstration records...")
@@ -142,6 +218,96 @@ def seed_demo_data_if_empty(db: Session):
             db.add(telem)
 
     db.commit()
+
+    # 5. Create initial audit log records
+    if db.query(SecurityAuditLog).count() == 0:
+        audit_events = [
+            SecurityAuditLog(
+                timestamp=now - timedelta(days=2, hours=4),
+                event_type="auth_registered",
+                severity="info",
+                actor_type="user",
+                actor_id=DEMO_USER_EMAIL,
+                ip_address="127.0.0.1",
+                resource="/auth/register",
+                status="success",
+                details={"role": "engineer", "source": "system_bootstrap"},
+            ),
+            SecurityAuditLog(
+                timestamp=now - timedelta(days=1, hours=8),
+                event_type="auth_login_success",
+                severity="info",
+                actor_type="user",
+                actor_id=DEMO_USER_EMAIL,
+                ip_address="127.0.0.1",
+                resource="/auth/login",
+                status="success",
+                details={"role": "engineer"},
+            ),
+            SecurityAuditLog(
+                timestamp=now - timedelta(days=1, hours=2),
+                event_type="machine_created",
+                severity="info",
+                actor_type="user",
+                actor_id=DEMO_USER_EMAIL,
+                ip_address="127.0.0.1",
+                resource="/machines/FAN-BAY-01",
+                status="success",
+                details={"machine_identifier": "FAN-BAY-01", "machine_type": "fan"},
+            ),
+            SecurityAuditLog(
+                timestamp=now - timedelta(hours=14),
+                event_type="iot_api_key_invalid",
+                severity="warning",
+                actor_type="iot_device",
+                actor_id="anonymous_bridge",
+                ip_address="127.0.0.1",
+                resource="/telemetry/ingest",
+                status="failure",
+                details={"reason": "Missing device credential on probe"},
+            ),
+            SecurityAuditLog(
+                timestamp=now - timedelta(hours=6),
+                event_type="scenario_injected",
+                severity="info",
+                actor_type="user",
+                actor_id=DEMO_USER_EMAIL,
+                ip_address="127.0.0.1",
+                resource="/simulator/machines/FAN-BAY-01/trigger",
+                status="success",
+                details={"scenario": "normal", "machine_identifier": "FAN-BAY-01"},
+            ),
+            SecurityAuditLog(
+                timestamp=now - timedelta(hours=2),
+                event_type="report_generated",
+                severity="info",
+                actor_type="user",
+                actor_id=DEMO_USER_EMAIL,
+                ip_address="127.0.0.1",
+                resource="/reports/PG-REP-20261108-DEMO",
+                status="success",
+                details={"report_id": "PG-REP-20261108-DEMO", "machine_identifier": "PUMP-LINE-02"},
+            ),
+        ]
+        db.add_all(audit_events)
+        db.commit()
+
+    # 6. Create initial diagnostic snapshot record
+    if db.query(DiagnosticSnapshot).count() == 0:
+        db.add(DiagnosticSnapshot(
+            overall_status="Operational",
+            execution_time_ms=18.4,
+            results={
+                "database": {"status": "Operational", "latency_ms": 1.1},
+                "audio_preprocessing": {"status": "Operational", "latency_ms": 3.4},
+                "ml_inference": {"status": "Operational", "latency_ms": 2.1},
+                "dataset_availability": {"status": "Operational"},
+                "environment_configuration": {"status": "Operational"},
+            },
+            created_at=now - timedelta(hours=1),
+        ))
+        db.commit()
+
     print("[INFO] Seeded demo account, 4 industrial machines, and historical monitoring trends.")
     return user
 

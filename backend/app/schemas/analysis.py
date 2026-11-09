@@ -56,3 +56,27 @@ class AnalysisListResponse(BaseModel):
     items: List[AnalysisResponse]
     total: int
 
+class FrequencyBandAttribution(BaseModel):
+    band_name: str
+    freq_range: str
+    residual_percentage: float
+    description: str
+
+class AnalysisExplainabilityResponse(BaseModel):
+    analysis_id: str
+    machine_identifier: str
+    machine_name: str
+    machine_type: str
+    anomaly_score: float
+    threshold: float
+    status: str
+    model_version: str
+    reconstruction_error: float
+    knn_distance: Optional[float]
+    inference_time_ms: float
+    frequency_bands_attribution: List[FrequencyBandAttribution]
+    model_based_evidence: List[str]
+    iot_telemetry_evidence: List[str]
+    interpretable_summary: str
+    disclaimer: str
+

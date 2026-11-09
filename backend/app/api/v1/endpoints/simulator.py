@@ -13,6 +13,7 @@ from backend.app.schemas.telemetry import (
 )
 from backend.app.api.deps import get_current_user
 from backend.app.api.v1.endpoints.telemetry import ws_manager
+from backend.app.services.audit_logger import log_security_event
 from iot.bridge.virtual_sensor_bridge import SCENARIOS, generate_telemetry_reading
 
 router = APIRouter()
@@ -48,21 +49,33 @@ async def trigger_machine_scenario(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Machine not found.")
 
     scenario = req.scenario.lower()
-    if scenario not in SCENARIOS:
+    if scenario != "custom" and scenario not in SCENARIOS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unknown scenario '{scenario}'. Available: {list(SCENARIOS.keys())}",
+            detail=f"Unknown scenario '{scenario}'. Available: {list(SCENARIOS.keys())} or 'custom'",
         )
 
-    reading = generate_telemetry_reading(machine.machine_identifier, scenario)
-
-    # Allow custom manual overrides from request if provided
-    if req.base_rpm is not None:
-        reading["rpm"] = req.base_rpm
-    if req.base_temperature is not None:
-        reading["temperature"] = req.base_temperature
-    if req.base_vibration is not None:
-        reading["vibration_indicator"] = req.base_vibration
+    if scenario == "custom":
+        rpm = float(req.base_rpm if req.base_rpm is not None else 2400.0)
+        temp = float(req.base_temperature if req.base_temperature is not None else 42.0)
+        vib = float(req.base_vibration if req.base_vibration is not None else 18.0)
+        op_status = "stopped" if rpm == 0 else "critical" if (temp > 80 or vib > 70 or rpm > 3600) else "warning" if (temp > 60 or vib > 45 or rpm > 2800) else "normal"
+        reading = {
+            "machine_identifier": machine.machine_identifier,
+            "rpm": rpm,
+            "temperature": temp,
+            "vibration_indicator": vib,
+            "operating_status": op_status,
+            "source": "software_simulator",
+        }
+    else:
+        reading = generate_telemetry_reading(machine.machine_identifier, scenario)
+        if req.base_rpm is not None:
+            reading["rpm"] = req.base_rpm
+        if req.base_temperature is not None:
+            reading["temperature"] = req.base_temperature
+        if req.base_vibration is not None:
+            reading["vibration_indicator"] = req.base_vibration
 
     telemetry = MachineTelemetry(
         machine_id=machine.id,
@@ -92,6 +105,23 @@ async def trigger_machine_scenario(
         "timestamp": telemetry.timestamp.isoformat(),
     }
     await ws_manager.broadcast_to_machine(machine.id, broadcast_payload)
+
+    log_security_event(
+        event_type="scenario_injected",
+        severity="info" if scenario == "normal" else "warning",
+        actor_type="user",
+        actor_id=current_user.email,
+        resource=f"/simulator/machines/{machine_id}/trigger",
+        status="success",
+        details={
+            "scenario": scenario,
+            "machine_identifier": machine.machine_identifier,
+            "rpm": telemetry.rpm,
+            "temperature": telemetry.temperature,
+            "vibration": telemetry.vibration_indicator,
+        },
+        db=db,
+    )
 
     return TelemetryResponse(
         id=telemetry.id,

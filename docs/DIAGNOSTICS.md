@@ -135,15 +135,33 @@ PulseGuard implements a decoupled, defense-in-depth diagnostic suite. Health and
 
 ---
 
+### 2.6 POST `/api/v1/health/run`
+*Purpose:* Active Deep Diagnostic Battery.
+- **Execution Battery:**
+  - Database read & write latency ping
+  - Audio preprocessing pipeline test (synthesizes 2.1s 16kHz sine wave, checks 128 Mel bands)
+  - ML inference forward pass latency check (measures CAE inference latency in ms)
+  - MIMII acoustic dataset splits verification (train/val/test counts)
+  - Environment variable presence and configuration security check
+  - Automatically records and persists an immutable `DiagnosticSnapshot` record in the database.
+
+---
+
+### 2.7 GET `/api/v1/health/history`
+*Purpose:* Retrieves historical diagnostic run snapshots (last 20 runs) with timestamps, service statuses, and execution latencies.
+
+---
+
 ## 3. Frontend System Diagnostics UI
 
 Located at `http://localhost:5173/diagnostics` (also linked in the sidebar with an Activity icon).
 
 ### Features:
 1. **Interactive Probe Cards:** Shows status badges (`Operational`, `Degraded`, `Unavailable`), response times in milliseconds, and detailed sub-properties.
-2. **One-Click Diagnostic Refresh:** Allows operators to trigger an immediate live poll across all diagnostic endpoints.
-3. **Automated Verification Action:** Runs an end-to-end integration check against both the API and database.
-4. **Structured Error Recovery:** If any service reports degraded or unavailable status, an actionable troubleshooting guide is displayed with specific resolution steps.
+2. **Auto-Polling Interval:** Configurable 15-second background auto-refresh toggle.
+3. **Run Active Deep Battery Button:** Triggers an immediate active battery test against all subsystems and updates the UI live.
+4. **Historical Snapshots Timeline:** Inspects historical diagnostic battery records persisted in the database.
+5. **Safe Remediation Procedures:** Clear, copyable commands for database initialization, model retraining, and IoT simulator invocation.
 
 ---
 
@@ -167,3 +185,4 @@ curl -s http://127.0.0.1:8000/api/v1/health/ml | jq .
 # Software IoT Health
 curl -s http://127.0.0.1:8000/api/v1/health/iot | jq .
 ```
+

@@ -19,6 +19,7 @@ import { Machine, Analysis, VisualizationData } from "../../types";
 import { AudioRecorder } from "../../components/audio/AudioRecorder";
 import { WaveformViewer } from "../../components/audio/WaveformViewer";
 import { SpectrogramViewer } from "../../components/audio/SpectrogramViewer";
+import { AIExplainabilityModal } from "./components/AIExplainabilityModal";
 
 export const AnalysisPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -34,6 +35,7 @@ export const AnalysisPage: React.FC = () => {
   const [analysisResult, setAnalysisResult] = useState<Analysis | null>(null);
   const [visData, setVisData] = useState<VisualizationData | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showExplainability, setShowExplainability] = useState<boolean>(false);
 
   // Operator Note Form
   const [noteText, setNoteText] = useState("");
@@ -363,6 +365,28 @@ export const AnalysisPage: React.FC = () => {
                 {analysisResult.recommendation}
               </p>
             </div>
+
+            {/* Advanced Action Buttons */}
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowExplainability(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 text-xs font-mono font-bold transition-all shadow-lg shadow-cyan-950/20"
+              >
+                <Sparkles className="h-4 w-4" />
+                <span>Inspect AI Explainability & Attribution</span>
+              </button>
+
+              <a
+                href={api.getDirectPdfUrl(analysisResult.id)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 text-xs font-mono font-bold transition-all shadow-lg shadow-emerald-950/20"
+              >
+                <FileAudio className="h-4 w-4" />
+                <span>Download Official PDF Maintenance Report</span>
+              </a>
+            </div>
           </div>
 
           {/* Spectrogram & Waveform Visualizations */}
@@ -432,6 +456,13 @@ export const AnalysisPage: React.FC = () => {
             )}
           </div>
         </div>
+      )}
+      {/* AI Explainability & Attribution Modal */}
+      {showExplainability && analysisResult && (
+        <AIExplainabilityModal
+          analysisId={analysisResult.id}
+          onClose={() => setShowExplainability(false)}
+        />
       )}
     </div>
   );

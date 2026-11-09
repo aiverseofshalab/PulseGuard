@@ -6,25 +6,32 @@ PulseGuard is a software-only industrial acoustic anomaly detection and predicti
 
 ```mermaid
 flowchart TD
-    subgraph ClientLayer ["Client Layer (React + Vite + TypeScript)"]
-        UI["Industrial UI (shadcn/ui + Skiper UI)"]
+    subgraph ClientLayer ["Client Layer (React 18 + Vite + TypeScript)"]
+        UI["Industrial UI (Tailwind + Skiper UI)"]
         AudioRec["Browser Mic / Audio Upload"]
         Dash["Real-Time Dashboard & Telemetry Charts"]
-        SimCtrl["Virtual Machine & Telemetry Controls"]
+        DigTwin["Digital Twin Motor Simulator (SVG Rotor + Sliders)"]
+        ExplainUI["AI Explainability & Attribution Modal"]
+        DiagUI["System Health & Diagnostic Console (/diagnostics)"]
+        AuditUI["Security Audit Dashboard (/security-audit)"]
     end
 
     subgraph APILayer ["API & Ingestion Layer (FastAPI v1)"]
-        Auth["Auth & Security Middleware"]
+        Auth["Auth & Security Middleware (JWT HS256)"]
+        AuditLog["Security Audit Logger (Structured Events)"]
         AudioAPI["Audio Ingestion & Validation API"]
         MachAPI["Machine Management API"]
         TelemAPI["Telemetry Ingestion (REST / WebSockets)"]
-        SimAPI["Simulation Engine API"]
+        SimAPI["Digital Twin Simulator Control API"]
+        ReportAPI["Automated PDF Report Generator (ReportLab)"]
+        HealthAPI["Diagnostic Health Probes (/live, /ready, /services, /run)"]
     end
 
     subgraph MLLayer ["Deep Learning Pipeline (PyTorch / SciPy)"]
         Preproc["Audio Preprocessing (16kHz, 128 Mel, 1024 FFT)"]
-        CAE["Convolutional Autoencoder (Reconstruction Error)"]
-        KNN["kNN Embedding Distance Engine"]
+        CAE["Convolutional Autoencoder (Reconstruction Error MSE)"]
+        KNN["kNN Embedding Distance Engine (64-D Latent Index)"]
+        ExplainEngine["Spectral Residual Decomposition (Low/Mid/High Bands)"]
         Scorer["Calibrated Anomaly Scorer & Health Assessor"]
     end
 
@@ -35,21 +42,27 @@ flowchart TD
     end
 
     subgraph StorageLayer ["Data & Storage Layer"]
-        PG["PostgreSQL / Supabase (Metadata, Analyses, Telemetry)"]
-        Artifacts["Calibrated Model Weights & Reference Banks"]
+        PG["PostgreSQL / SQLite Database"]
+        Snapshots["Diagnostic Snapshots & Audit Event Logs"]
+        Artifacts["Trained ConvAutoencoder Weights & kNN Indices"]
     end
 
     UI --> Auth
     AudioRec --> AudioAPI
     Dash --> TelemAPI
-    SimCtrl --> SimAPI
+    DigTwin --> SimAPI
+    ExplainUI --> AudioAPI
+    DiagUI --> HealthAPI
+    AuditUI --> AuditLog
 
-    AudioAPI --> Preproc --> CAE & KNN --> Scorer
+    AudioAPI --> Preproc --> CAE & KNN --> Scorer --> ExplainEngine
     TelemAPI --> PG
     Scorer --> PG
     SimAPI --> VirtBridge
     VirtBridge --> TelemAPI
     Tinkercad -.-> VirtBridge
+    ReportAPI --> PG
+    HealthAPI --> Snapshots
 ```
 
 ---

@@ -27,14 +27,15 @@ import {
 } from "recharts";
 import { api } from "../../services/api";
 import { Machine, MachineTelemetry, HealthFusionAssessment } from "../../types";
+import { DigitalTwinMotor } from "./components/DigitalTwinMotor";
 
 const SCENARIOS = [
-  { id: "normal", label: "Nominal Baseline", desc: "2400 RPM, 42°C, 18% vibration" },
-  { id: "warning", label: "Early Stress Warning", desc: "2850 RPM, 64°C, 48% vibration" },
-  { id: "overheat", label: "Thermal Overheat Surge", desc: "Bearing temperature 88.5°C" },
-  { id: "high_vibration", label: "Severe Mechanical Vibration", desc: "84% vibration intensity" },
-  { id: "speed_surge", label: "Over-speed Surge", desc: "3850 RPM speed runaway" },
-  { id: "stopped", label: "Machine Stopped", desc: "0 RPM shutdown state" },
+  { id: "normal", label: "1. Nominal Baseline", desc: "2400 RPM, 42°C, 18% vibration (Optimal Operation)" },
+  { id: "overheat", label: "2. High Temperature Surge", desc: "Bearing housing temperature rises to 88.5°C" },
+  { id: "high_vibration", label: "3. Excessive Vibration Proxy", desc: "84% vibration intensity mechanical imbalance" },
+  { id: "speed_surge", label: "4. RPM Fluctuation & Over-speed", desc: "Erratic speed runaway up to 3850 RPM" },
+  { id: "combined_abnormal", label: "5. Combined Abnormal Operation", desc: "Simultaneous thermal (91°C) + vibration (88%) + speed surge" },
+  { id: "stopped", label: "Machine Stopped / Offline", desc: "0 RPM emergency shutdown state" },
 ];
 
 const ARDUINO_CODE_SNIPPET = `/* Autodesk Tinkercad Circuits - Arduino Uno Telemetry */
@@ -68,6 +69,9 @@ export const SimulatorPage: React.FC = () => {
   const [healthFusion, setHealthFusion] = useState<HealthFusionAssessment | null>(null);
   const [activeScenario, setActiveScenario] = useState<string>("normal");
   const [wsConnected, setWsConnected] = useState<boolean>(false);
+  const [manualRpm, setManualRpm] = useState<number>(2400);
+  const [manualTemp, setManualTemp] = useState<number>(42);
+  const [manualVib, setManualVib] = useState<number>(18);
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
   const [triggering, setTriggering] = useState<boolean>(false);
 
@@ -158,6 +162,29 @@ export const SimulatorPage: React.FC = () => {
     }
   };
 
+  const handleApplyManual = async () => {
+    if (!selectedMachineId) return;
+    setTriggering(true);
+    setActiveScenario("custom");
+    try {
+      const res = await api.triggerScenario(
+        selectedMachineId,
+        "custom",
+        manualRpm,
+        manualTemp,
+        manualVib
+      );
+      setLatestTelem(res);
+      setHistory((prev) => [...prev.slice(-19), res]);
+      const fusion = await api.getHealthFusion(selectedMachineId);
+      setHealthFusion(fusion);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTriggering(false);
+    }
+  };
+
   const handleCopyCode = () => {
     navigator.clipboard.writeText(ARDUINO_CODE_SNIPPET);
     setCopiedCode(true);
@@ -219,98 +246,107 @@ export const SimulatorPage: React.FC = () => {
         </span>
       </div>
 
-      {/* Live Telemetry Gauges Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {/* RPM Gauge */}
-        <div className="p-6 rounded-2xl bg-[#0b0f17] border border-[#1f293d] space-y-3">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400">
-            <span>ROTATIONAL SPEED</span>
-            <Gauge className="h-4 w-4 text-cyan-400" />
+      {/* Digital Twin Motor Assembly */}
+      <DigitalTwinMotor
+        rpm={latestTelem ? latestTelem.rpm : 2400}
+        temperature={latestTelem ? latestTelem.temperature : 42.0}
+        vibration={latestTelem ? latestTelem.vibration_indicator : 18.0}
+        operatingStatus={latestTelem ? latestTelem.operating_status : "running"}
+        machineIdentifier={selectedMachine ? selectedMachine.machine_identifier : "FAN-BAY-01"}
+        machineName={selectedMachine ? selectedMachine.machine_name : "Primary Aeration Blower Fan"}
+        onEmergencyStop={() => handleTriggerScenario("stopped")}
+        onStartMachine={() => handleTriggerScenario("normal")}
+      />
+
+      {/* Manual Direct Parameter Controls */}
+      <div className="p-6 rounded-2xl bg-[#0b0f17] border border-[#1f293d] space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <h3 className="text-sm font-bold text-white uppercase font-mono">
+              Manual Virtual Sensor Sliders (Direct Digital Twin Control)
+            </h3>
+            <p className="text-xs text-slate-400">
+              Drag sensors to dynamically inject custom machine condition telemetry into the live WebSocket bridge:
+            </p>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-black font-mono text-white">
-              {latestTelem ? latestTelem.rpm.toFixed(0) : "2400"}
-            </span>
-            <span className="text-xs font-mono text-slate-500">RPM</span>
-          </div>
-          <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-            <div
-              className="h-full bg-cyan-400 transition-all duration-500"
-              style={{
-                width: `${Math.min(100, ((latestTelem?.rpm || 2400) / 4000) * 100)}%`,
-              }}
-            />
-          </div>
-          <div className="text-[10px] text-slate-500 font-mono flex justify-between">
-            <span>0 RPM</span>
-            <span>Nominal: 2400</span>
-            <span>4000 RPM</span>
-          </div>
+          <button
+            onClick={handleApplyManual}
+            disabled={triggering}
+            className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-colors shadow-lg shadow-cyan-950/40"
+          >
+            {triggering ? "Injecting..." : "Apply Manual Injection"}
+          </button>
         </div>
 
-        {/* Temperature Gauge */}
-        <div className="p-6 rounded-2xl bg-[#0b0f17] border border-[#1f293d] space-y-3">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400">
-            <span>BEARING THERMAL (TMP36)</span>
-            <Flame className="h-4 w-4 text-amber-400" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-black font-mono text-white">
-              {latestTelem ? latestTelem.temperature.toFixed(1) : "42.0"}
-            </span>
-            <span className="text-xs font-mono text-slate-500">°C</span>
-          </div>
-          <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-            <div
-              className={`h-full transition-all duration-500 ${
-                (latestTelem?.temperature || 42) > 75
-                  ? "bg-red-500"
-                  : (latestTelem?.temperature || 42) > 60
-                  ? "bg-amber-400"
-                  : "bg-emerald-400"
-              }`}
-              style={{
-                width: `${Math.min(100, ((latestTelem?.temperature || 42) / 100) * 100)}%`,
-              }}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+          {/* RPM Slider */}
+          <div className="space-y-2 p-4 rounded-xl bg-[#070a0f] border border-[#1f293d]">
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-slate-400">Rotational Speed:</span>
+              <span className="text-cyan-400 font-bold">{manualRpm} RPM</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="4500"
+              step="50"
+              value={manualRpm}
+              onChange={(e) => setManualRpm(Number(e.target.value))}
+              className="w-full accent-cyan-500 cursor-pointer"
             />
+            <div className="flex justify-between text-[10px] font-mono text-slate-500">
+              <span>0 (Stop)</span>
+              <span>2400 (Nominal)</span>
+              <span>4500 (Over-speed)</span>
+            </div>
           </div>
-          <div className="text-[10px] text-slate-500 font-mono flex justify-between">
-            <span>0°C</span>
-            <span>Warning: 60°C</span>
-            <span>Critical: 75°C</span>
-          </div>
-        </div>
 
-        {/* Vibration Proxy Indicator */}
-        <div className="p-6 rounded-2xl bg-[#0b0f17] border border-[#1f293d] space-y-3">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400">
-            <span>VIBRATION PROXY (POTENTIOMETER)</span>
-            <Activity className="h-4 w-4 text-emerald-400" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-black font-mono text-white">
-              {latestTelem ? latestTelem.vibration_indicator.toFixed(1) : "18.0"}
-            </span>
-            <span className="text-xs font-mono text-slate-500">% Intensity</span>
-          </div>
-          <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-            <div
-              className={`h-full transition-all duration-500 ${
-                (latestTelem?.vibration_indicator || 18) > 70
-                  ? "bg-red-500"
-                  : (latestTelem?.vibration_indicator || 18) > 45
-                  ? "bg-amber-400"
-                  : "bg-emerald-400"
-              }`}
-              style={{
-                width: `${Math.min(100, latestTelem?.vibration_indicator || 18)}%`,
-              }}
+          {/* Temperature Slider */}
+          <div className="space-y-2 p-4 rounded-xl bg-[#070a0f] border border-[#1f293d]">
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-slate-400">Housing Temp (TMP36):</span>
+              <span className={`font-bold ${manualTemp > 75 ? "text-red-400" : manualTemp > 55 ? "text-amber-400" : "text-emerald-400"}`}>
+                {manualTemp} °C
+              </span>
+            </div>
+            <input
+              type="range"
+              min="15"
+              max="115"
+              step="1"
+              value={manualTemp}
+              onChange={(e) => setManualTemp(Number(e.target.value))}
+              className="w-full accent-amber-500 cursor-pointer"
             />
+            <div className="flex justify-between text-[10px] font-mono text-slate-500">
+              <span>15°C (Cold)</span>
+              <span>42°C (Nominal)</span>
+              <span>115°C (Severe Overheat)</span>
+            </div>
           </div>
-          <div className="text-[10px] text-slate-500 font-mono flex justify-between">
-            <span>0%</span>
-            <span>Warning: 45%</span>
-            <span>Critical: 70%</span>
+
+          {/* Vibration Slider */}
+          <div className="space-y-2 p-4 rounded-xl bg-[#070a0f] border border-[#1f293d]">
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-slate-400">Vibration Proxy:</span>
+              <span className={`font-bold ${manualVib > 65 ? "text-red-400" : manualVib > 40 ? "text-amber-400" : "text-cyan-400"}`}>
+                {manualVib} %
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={manualVib}
+              onChange={(e) => setManualVib(Number(e.target.value))}
+              className="w-full accent-emerald-500 cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] font-mono text-slate-500">
+              <span>0% (Minimal)</span>
+              <span>18% (Nominal)</span>
+              <span>100% (Critical Shake)</span>
+            </div>
           </div>
         </div>
       </div>

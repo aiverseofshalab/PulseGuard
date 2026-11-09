@@ -44,17 +44,37 @@ def get_current_user(
     
     return user
 
+from backend.app.services.audit_logger import log_security_event
+
 def verify_iot_api_key(x_api_key: Optional[str] = Header(None)) -> bool:
     """
     Validates IoT hardware/bridge API key for telemetry ingestion.
     Supports secure programmatic communication from Virtual Sensor Bridge and Tinkercad streams.
     """
     if not x_api_key:
+        log_security_event(
+            event_type="iot_api_key_invalid",
+            severity="warning",
+            actor_type="iot_device",
+            actor_id="anonymous_bridge",
+            resource="/telemetry/ingest",
+            status="failure",
+            details={"reason": "Missing X-API-KEY header"},
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing X-API-KEY header for IoT telemetry stream",
         )
     if x_api_key != settings.IOT_API_KEY:
+        log_security_event(
+            event_type="iot_api_key_invalid",
+            severity="critical",
+            actor_type="iot_device",
+            actor_id="unauthorized_bridge",
+            resource="/telemetry/ingest",
+            status="failure",
+            details={"reason": "Key mismatch"},
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid IoT device API key",

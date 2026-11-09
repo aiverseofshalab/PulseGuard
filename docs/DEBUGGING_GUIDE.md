@@ -138,3 +138,4 @@ Bridge outputs `Network/Backend unreachable`.
    ```
 3. Check the response in the terminal. You should see `Emitted -> RPM: ... | Temp: ... | Vib: ...`.
 4. Open the frontend Telemetry Simulator page (`http://localhost:5173/simulator`) to watch live WebSocket telemetry updates stream in real time.
+

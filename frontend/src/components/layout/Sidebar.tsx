@@ -8,6 +8,7 @@ import {
   TrendingUp,
   BrainCircuit,
   Activity,
+  ShieldCheck,
   ExternalLink,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { name: "Trends & History", path: "/analytics", icon: TrendingUp },
   { name: "Model Architecture", path: "/model", icon: BrainCircuit },
   { name: "System Diagnostics", path: "/diagnostics", icon: Activity },
+  { name: "Security Audit", path: "/security-audit", icon: ShieldCheck },
 ];
 
 export const Sidebar: React.FC = () => {

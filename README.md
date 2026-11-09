@@ -25,25 +25,28 @@ By comparing reconstruction residuals against calibrated validation thresholds, 
 - **Standardized Log-Mel Acoustic Pipeline:**
   - 16,000 Hz polyphase resampling, 1024-point Hann window STFT, 512-sample hop size, 128 Mel-scale filter banks (0–8,000 Hz).
   - Robust audio validation: PCM WAV format verification, file size limits (15 MB), RMS energy silence detection, and amplitude clipping guards.
-- **Unsupervised Deep Learning Engine:**
+- **Unsupervised Deep Learning Engine & AI Explainability:**
   - **Primary Model:** 4-stage 2D Convolutional Autoencoder with symmetrical transposed convolutions and a 64-dimensional latent bottleneck.
   - **Loss Function:** Mean Squared Error (MSE) on normalized Log-Mel spectrograms.
   - **Secondary Baseline:** kNN latent embedding distance to verify acoustic cluster separation.
+  - **Explainability:** Residual error attribution decomposed across Low (0-2kHz), Mid (2-4kHz), and High (4-8kHz) sub-bands with quantitative model-based vs. IoT rule-based evidence.
   - **Threshold Calibration:** Calibrated using 90th (Warning) and 99th (Critical) percentiles strictly on normal validation soundscapes.
   - **Held-out Benchmark:** **ROC-AUC: 1.0000**, **PR-AUC: 1.0000**, **F1-Score: 0.9091**, Average Inference Latency: **1.54 ms**.
-- **Software-Only Industrial IoT Simulation:**
-  - Complete Autodesk Tinkercad Circuits reference schematic (Arduino Uno, TMP36 temperature, potentiometer vibration proxy, tachometer pulses).
+- **Digital Twin & Software-Only Industrial IoT Simulation:**
+  - Interactive SVG digital twin motor/fan with real-time rotational speed response, thermal aura, and vibration jitter.
+  - Direct manual slider overrides (RPM, Temperature, Vibration Proxy) and 5 distinct operational scenarios (Nominal, Overheat Surge, Excessive Vibration, Speed Fluctuation, Combined Abnormal).
+  - Autodesk Tinkercad Circuits reference schematic (Arduino Uno, TMP36, potentiometer, tachometer).
   - Decoupled Python Virtual Sensor Bridge (`iot/bridge/virtual_sensor_bridge.py`) streaming authenticated telemetry via REST and WebSockets.
-  - Explainable Multi-Sensor Health Fusion Engine combining acoustic anomaly scores with telemetry evidence.
-- **Industrial SaaS UI/UX:**
-  - Polished dark industrial theme (`#070a0f`, `#0b0f17`, `#111827`) with cyan accents.
-  - Integrated with **Skiper UI** animated link components (`@skiper-ui/skiper40`).
-  - Interactive spectrogram heatmaps, audio waveform visualizers, real-time Recharts sensor streams, and CSV report export.
-- **Cybersecurity & Data Governance:**
-  - Multi-tenant data isolation (`user_id` enforced on all ORM queries).
-  - Stateless JWT authentication with salted bcrypt password hashing.
-  - Separate `X-API-KEY` device header verification for IoT streams.
-  - In-memory audio parsing eliminating temporary file vulnerability vectors.
+- **Automated PDF Maintenance Reports:**
+  - Multi-page publication-grade PDF report generation using ReportLab with unique identifier (`PG-REP-YYYYMMDD-XXXX`).
+  - Contains machine condition tables, acoustic spectrogram analysis, simulated telemetry observations, maintenance action checklist, and legal disclaimers.
+- **System Self-Diagnostics & Health Monitoring:**
+  - Dedicated diagnostic probes (`/health/live`, `/ready`, `/services`, `/ml`, `/iot`, `/run`, `/history`).
+  - Active automated testing battery validating database latency, audio preprocessing, model forward pass, and dataset integrity.
+- **Security Audit & Access Governance:**
+  - Role-protected Security Audit Dashboard (`/security-audit`) restricted to engineering/admin personnel.
+  - Immutable audit logs tracking successful/failed logins, invalid device API keys, and configuration changes with 90-day retention.
+  - Stateless JWT authentication with salted bcrypt hashing and strict multi-tenant isolation.
 
 ---
 

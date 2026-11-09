@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { api } from "../../services/api";
 import { DashboardSummary, Machine } from "../../types";
+import LiveIoTPanel from "./LiveIoTPanel";
 
 export const DashboardPage: React.FC = () => {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -266,6 +267,8 @@ export const DashboardPage: React.FC = () => {
             <Cpu className="h-4 w-4 text-emerald-400" />
             <span>Open Virtual IoT Simulator</span>
           </Link>
+
+          <LiveIoTPanel />
 
           {/* Recent Inferences */}
           <div className="space-y-3 pt-2 border-t border-[#1f293d]">

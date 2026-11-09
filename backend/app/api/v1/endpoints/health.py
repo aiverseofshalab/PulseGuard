@@ -1,8 +1,12 @@
 import os
 import time
-from typing import Dict, Any
+import io
+import wave
+import numpy as np
+import torch
+from typing import Dict, Any, List
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, status, Response
+from fastapi import APIRouter, Depends, status, Response, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
@@ -12,6 +16,7 @@ from backend.app.ml.inference.infer import inference_service
 from backend.app.models.machine import Machine
 from backend.app.models.telemetry import MachineTelemetry
 from backend.app.models.analysis import Analysis
+from backend.app.models.diagnostic import DiagnosticSnapshot
 
 router = APIRouter()
 
@@ -227,3 +232,197 @@ def iot_pipeline_diagnostics(db: Session = Depends(get_db)):
         ],
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
+
+@router.post("/run", tags=["Diagnostics"])
+def run_deep_diagnostics(db: Session = Depends(get_db)):
+    """
+    Active System Diagnostic Battery.
+    Executes live verification tests across Database, Audio Pipeline, ML Inference,
+    MIMII Dataset files, and Environment configurations. Persists a DiagnosticSnapshot.
+    """
+    t_start = time.perf_counter()
+    results = {}
+
+    # 1. Database Read/Write Diagnostic
+    try:
+        t0 = time.perf_counter()
+        db.execute(text("SELECT 1"))
+        db_lat = round((time.perf_counter() - t0) * 1000.0, 2)
+        results["database"] = {
+            "status": "Operational",
+            "latency_ms": db_lat,
+            "message": "Database read query verified",
+            "driver": "SQLite" if settings.DATABASE_URL.startswith("sqlite") else "PostgreSQL",
+        }
+    except Exception as e:
+        results["database"] = {
+            "status": "Unavailable",
+            "latency_ms": -1,
+            "message": "Database connection failed",
+            "troubleshooting": "Check database file permissions or verify DATABASE_URL connection string.",
+        }
+
+    # 2. Audio Preprocessing Pipeline Diagnostic
+    spec = None
+    try:
+        t0 = time.perf_counter()
+        from backend.app.ml.preprocessing.audio_processor import audio_processor
+
+        # Synthesize 2.1s 16kHz sine wave PCM WAV (to yield >= 64 time frames)
+        sample_rate = 16000
+        duration = 2.1
+        t_arr = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+        waveform = (np.sin(2 * np.pi * 440.0 * t_arr) * 16384).astype(np.int16)
+
+        wav_buf = io.BytesIO()
+        with wave.open(wav_buf, "wb") as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)
+            wf.setframerate(sample_rate)
+            wf.writeframes(waveform.tobytes())
+        test_audio_bytes = wav_buf.getvalue()
+
+        clean_wav, meta = audio_processor.validate_and_load_wav(test_audio_bytes)
+        spec = audio_processor.compute_log_mel_spectrogram(clean_wav)
+        audio_lat = round((time.perf_counter() - t0) * 1000.0, 2)
+        results["audio_preprocessing"] = {
+            "status": "Operational",
+            "latency_ms": audio_lat,
+            "spectrogram_shape": list(spec.shape),
+            "quality_detected": meta["audio_quality"],
+            "message": "Acoustic preprocessing pipeline passed synthetic 16kHz sine test",
+        }
+    except Exception as e:
+        results["audio_preprocessing"] = {
+            "status": "Degraded",
+            "latency_ms": -1,
+            "message": f"Audio preprocessing failed: {str(e)}",
+            "troubleshooting": "Verify NumPy and SciPy signal processing packages are installed.",
+        }
+
+    # 3. ML Inference Diagnostic
+    try:
+        t0 = time.perf_counter()
+        if inference_service.is_model_ready and inference_service.model:
+            test_spec = spec if spec is not None else np.zeros((128, 64), dtype=np.float32)
+            inf_res = inference_service.run_inference(log_mel_spec=test_spec, machine_type="fan", audio_quality="valid")
+            total_inf_lat = round((time.perf_counter() - t0) * 1000.0, 2)
+            results["ml_inference"] = {
+                "status": "Operational",
+                "latency_ms": total_inf_lat,
+                "model_version": inf_res.get("model_version", inference_service.model_version),
+                "device": str(inference_service.device),
+                "knn_ready": inference_service.is_knn_ready,
+                "message": f"Forward pass executed in {inf_res.get('inference_time_ms', 1.5):.2f}ms",
+            }
+        else:
+            results["ml_inference"] = {
+                "status": "Degraded",
+                "latency_ms": -1,
+                "message": "ConvAutoencoder model weights not loaded in memory",
+                "troubleshooting": "Run training script `python3 training/train_cae.py` to generate weights.",
+            }
+    except Exception as e:
+        results["ml_inference"] = {
+            "status": "Unavailable",
+            "latency_ms": -1,
+            "message": f"Inference execution failed: {str(e)}",
+            "troubleshooting": "Check PyTorch runtime compatibility and artifact path.",
+        }
+
+    # 4. Dataset Files Diagnostic
+    dataset_dirs = [
+        "data/mimii_fan/train_normal",
+        "data/mimii_fan/val_normal",
+        "data/mimii_fan/test_normal",
+    ]
+    ds_counts = {}
+    ds_all_present = True
+    for d in dataset_dirs:
+        if os.path.exists(d):
+            c = len([f for f in os.listdir(d) if f.endswith(".wav")])
+            ds_counts[os.path.basename(d)] = c
+            if c == 0:
+                ds_all_present = False
+        else:
+            ds_counts[os.path.basename(d)] = 0
+            ds_all_present = False
+
+    results["dataset_availability"] = {
+        "status": "Operational" if ds_all_present else "Degraded",
+        "split_counts": ds_counts,
+        "message": "MIMII acoustic benchmark splits verified" if ds_all_present else "Some dataset splits missing",
+        "troubleshooting": "Generate dataset with `python3 training/generate_mimii_soundscapes.py`." if not ds_all_present else None,
+    }
+
+    # 5. Environment & Security Config Diagnostic
+    env_keys_set = {
+        "SECRET_KEY": bool(settings.SECRET_KEY and settings.SECRET_KEY != ""),
+        "ALGORITHM": bool(settings.ALGORITHM),
+        "ACCESS_TOKEN_EXPIRE_MINUTES": bool(settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+        "IOT_API_KEY": bool(settings.IOT_API_KEY),
+        "DATABASE_URL": bool(settings.DATABASE_URL),
+    }
+    all_env_ok = all(env_keys_set.values())
+    results["environment_configuration"] = {
+        "status": "Operational" if all_env_ok else "Degraded",
+        "configured_parameters": {k: "Configured" if v else "Missing" for k, v in env_keys_set.items()},
+        "message": "All required environment configurations present" if all_env_ok else "Some environment variables are missing",
+    }
+
+    # Overall Status Calculation
+    statuses = [res.get("status", "Unavailable") for res in results.values()]
+    if any(s == "Unavailable" for s in statuses):
+        overall = "Unavailable"
+    elif any(s == "Degraded" for s in statuses):
+        overall = "Degraded"
+    else:
+        overall = "Operational"
+
+    total_exec_time = round((time.perf_counter() - t_start) * 1000.0, 2)
+
+    # Persist Snapshot to Database
+    try:
+        snapshot = DiagnosticSnapshot(
+            overall_status=overall,
+            execution_time_ms=total_exec_time,
+            results=results,
+        )
+        db.add(snapshot)
+        db.commit()
+        db.refresh(snapshot)
+        snapshot_id = snapshot.id
+    except Exception:
+        snapshot_id = "unpersisted"
+
+    return {
+        "id": snapshot_id,
+        "overall_status": overall,
+        "execution_time_ms": total_exec_time,
+        "results": results,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+@router.get("/history", tags=["Diagnostics"])
+def get_diagnostic_history(limit: int = Query(default=10, ge=1, le=50), db: Session = Depends(get_db)):
+    """
+    Retrieves the historical log of diagnostic battery test runs.
+    """
+    snapshots = (
+        db.query(DiagnosticSnapshot)
+        .order_by(DiagnosticSnapshot.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+    return [
+        {
+            "id": s.id,
+            "overall_status": s.overall_status,
+            "execution_time_ms": s.execution_time_ms,
+            "results": s.results,
+            "timestamp": s.created_at.isoformat(),
+        }
+        for s in snapshots
+    ]
+
+

@@ -152,3 +152,68 @@ export interface ModelInfo {
   last_calibrated_at: string | null;
 }
 
+export interface FrequencyBandAttribution {
+  band_name: string;
+  freq_range: string;
+  residual_percentage: number;
+  description: string;
+}
+
+export interface AnalysisExplainability {
+  analysis_id: string;
+  machine_identifier: string;
+  machine_name: string;
+  machine_type: string;
+  anomaly_score: number;
+  threshold: number;
+  status: string;
+  model_version: string;
+  reconstruction_error: number;
+  knn_distance: number | null;
+  inference_time_ms: number;
+  frequency_bands_attribution: FrequencyBandAttribution[];
+  model_based_evidence: string[];
+  iot_telemetry_evidence: string[];
+  interpretable_summary: string;
+  disclaimer: string;
+}
+
+export interface MaintenanceReportItem {
+  id: string;
+  report_identifier: string;
+  title: string;
+  status: string;
+  machine_identifier: string;
+  machine_name: string;
+  created_at: string;
+  download_url: string;
+}
+
+export interface SecurityAuditLogItem {
+  id: string;
+  timestamp: string;
+  event_type: string;
+  severity: "info" | "warning" | "critical";
+  actor_type: string;
+  actor_id: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  resource: string | null;
+  status: "success" | "failure";
+  details: Record<string, any> | null;
+}
+
+export interface SecurityAuditSummary {
+  total_events: number;
+  critical_events: number;
+  warning_events: number;
+  info_events: number;
+  failed_logins: number;
+  successful_logins: number;
+  unauthorized_requests: number;
+  security_posture: "SECURE_NOMINAL" | "MODERATE_OBSERVATION" | "ELEVATED_RISK";
+  retention_policy: string;
+  last_updated: string;
+}
+
+
