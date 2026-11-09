@@ -21,3 +21,4 @@ class MaintenanceReport(Base):
     analysis = relationship("Analysis")
     machine = relationship("Machine")
     user = relationship("User")
+

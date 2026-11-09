@@ -56,3 +56,4 @@ def log_security_event(
     finally:
         if should_close:
             db.close()
+

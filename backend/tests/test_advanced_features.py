@@ -192,3 +192,4 @@ def test_security_audit_logging_and_rbac(client, auth_headers):
         },
     )
     assert bad_key_res.status_code == 403
+

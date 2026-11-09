@@ -256,3 +256,4 @@ export const DigitalTwinMotor: React.FC<DigitalTwinMotorProps> = ({
     </div>
   );
 };
+

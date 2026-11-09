@@ -282,3 +282,4 @@ def generate_maintenance_pdf(
     doc.build(story)
     buffer.seek(0)
     return buffer.getvalue()
+

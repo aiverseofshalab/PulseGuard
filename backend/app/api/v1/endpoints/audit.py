@@ -125,3 +125,4 @@ def get_audit_summary(
         "retention_policy": "90 Days Encrypted Read-Only Audit Retention",
         "last_updated": datetime.now(timezone.utc).isoformat(),
     }
+

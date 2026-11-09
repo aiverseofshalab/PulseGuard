@@ -11,3 +11,4 @@ class DiagnosticSnapshot(Base):
     execution_time_ms = Column(Float, nullable=False, default=0.0)
     results = Column(JSON, nullable=False)  # Detailed dictionary of service checks
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+

@@ -17,3 +17,4 @@ class SecurityAuditLog(Base):
     resource = Column(String(255), nullable=True)
     status = Column(String(50), default="success", nullable=False)  # success, failure
     details = Column(JSON, nullable=True)  # Contextual sanitized details (never secrets or passwords)
+
