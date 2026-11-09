@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, String, Float, Text, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from backend.app.database.session import Base
@@ -17,7 +17,7 @@ class Analysis(Base):
     model_version = Column(String(100), default="cae-v1.0.0", nullable=False)
     recording_duration = Column(Float, default=0.0, nullable=False)
     recommendation = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
     machine = relationship("Machine", back_populates="analyses")
     user = relationship("User", back_populates="analyses")
@@ -43,7 +43,7 @@ class OperatorNote(Base):
     analysis_id = Column(String(36), ForeignKey("analyses.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     note = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     analysis = relationship("Analysis", back_populates="operator_notes")
     user = relationship("User", back_populates="operator_notes")

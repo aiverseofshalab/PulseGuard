@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 class TelemetryIngestRequest(BaseModel):
     machine_identifier: str = Field(..., description="Machine identifier (e.g. FAN-BAY-01)")
@@ -22,8 +22,7 @@ class TelemetryResponse(BaseModel):
     source: str
     timestamp: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class SimulatorControlRequest(BaseModel):
     scenario: str = Field(..., description="Scenario: normal, warning, overheat, high_vibration, speed_surge, stopped")

@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter
 from backend.app.core.config import settings
 from backend.app.ml.inference.infer import inference_service
@@ -28,7 +28,7 @@ def get_model_info():
         },
         calibrated_thresholds=inference_service.calibrated_thresholds,
         knn_baseline_ready=inference_service.is_knn_ready,
-        last_calibrated_at=datetime.utcnow() if inference_service.is_model_ready else None,
+        last_calibrated_at=datetime.now(timezone.utc) if inference_service.is_model_ready else None,
     )
 
 @router.get("/health")

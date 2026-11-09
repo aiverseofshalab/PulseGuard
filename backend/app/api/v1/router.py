@@ -8,10 +8,12 @@ from backend.app.api.v1.endpoints import (
     model_info,
     dashboard,
     reports,
+    health,
 )
 
 api_router = APIRouter()
 
+api_router.include_router(health.router, prefix="/health", tags=["System Diagnostics"])
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(machines.router, prefix="/machines", tags=["Machines"])
 api_router.include_router(analyses.router, prefix="/analyses", tags=["Audio Acoustic Analyses"])

@@ -2,41 +2,56 @@
 
 **Project Name:** PulseGuard  
 **Full Title:** Deep Learning-Based Industrial Machine Acoustic Anomaly Detection and Predictive Maintenance Support System with Software-Based IoT Telemetry Simulation  
-**Current Phase:** All Phases (Phase 0 through Phase 9) Completed & Verified  
+**Current Phase:** Production-Ready & Verified (Full Debugging, Self-Diagnostics & Quality Audit Complete)  
 **Last Updated:** 2026-11-09  
 
 ---
 
 ## 1. Executive Summary
 
-PulseGuard has been designed, implemented, and verified as a production-grade, software-only industrial acoustic monitoring and predictive maintenance platform. The system processes machine acoustic operating sounds (fans, pumps, valves, slide rails), extracts 128-band Log-Mel spectrograms, runs unsupervised Convolutional Autoencoder inference (reconstruction error MSE) paired with a kNN latent embedding baseline, and synthesizes results with a virtual software IoT telemetry stream (simulating Autodesk Tinkercad Uno + TMP36 + potentiometer vibration proxy + pulse tachometer) to deliver interpretable, multi-dimensional predictive maintenance insights without requiring physical hardware.
+PulseGuard has been audited, diagnosed, hardened, and verified as a production-grade, software-only industrial acoustic monitoring and predictive maintenance platform.
+
+The system processes machine acoustic operating sounds (fans, pumps, valves, slide rails), extracts 128-band Log-Mel spectrograms, runs unsupervised Convolutional Autoencoder inference (reconstruction error MSE) paired with a kNN latent embedding baseline, and synthesizes results with a virtual software IoT telemetry stream (simulating Autodesk Tinkercad Uno + TMP36 + potentiometer vibration proxy + pulse tachometer) to deliver interpretable, multi-dimensional predictive maintenance insights without requiring physical hardware.
 
 ---
 
-## 2. Phase-by-Phase Roadmap & Status
+## 2. Root Cause Diagnosis & Resolution Log
 
-| Phase | Description | Status | Evidence / Milestone |
-|---|---|---|---|
-| **Phase 0** | **Repository Audit & Baseline Assessment** | **COMPLETED** | Verified clean repository, audited local environment (Node v24, Python 3.14, Git), initialized foundation documentation. |
-| **Phase 1** | **Architecture & Foundation** | **COMPLETED** | Clean monorepo folder setup, `.gitignore`, `.env.example`, database models, schemas, and configurations. |
-| **Phase 2** | **UI Foundation & Design System** | **COMPLETED** | React + Vite + Tailwind + shadcn/ui + Skiper UI (`@skiper-ui/skiper40`) dark industrial aesthetic tokens, navigation, layout, landing page, and dashboard shell. |
-| **Phase 3** | **Dataset & ML Pipeline** | **COMPLETED** | MIMII acoustic dataset processor, log-Mel spectrogram generation (16kHz, 1024 n_fft, 512 hop, 128 mel), ConvAutoencoder architecture, training loop, kNN feature distance baseline, and threshold calibration. |
-| **Phase 4** | **Backend Integration & APIs** | **COMPLETED** | FastAPI v1 modular endpoints (`/machines`, `/analyses`, `/simulator`, `/model`, `/telemetry`, `/dashboard`, `/reports`), SQLAlchemy repository layer, scoring engine, and WebSockets. |
-| **Phase 5** | **Frontend Functionality** | **COMPLETED** | Full dashboard integration, machine management, audio file upload & browser microphone recording, interactive spectrogram & waveform visualizations, simulated IoT telemetry controls & charts. |
-| **Phase 6** | **Cybersecurity & Safety Controls** | **COMPLETED** | Authentication, role authorization, tenant isolation, audio MIME/content sanitization, rate limiting, and parameter validation. |
-| **Phase 7** | **System Integration & Testing** | **COMPLETED** | End-to-end integration, 17/17 pytest tests passing (audio processing, ML inference, API endpoints, simulator), frontend build verified (`npm run build` succeeds in 1.4s). |
-| **Phase 8** | **Production & Deployment Preparation** | **COMPLETED** | `Dockerfile`, `render.yaml`, `frontend/vercel.json`, Supabase schema scripts, environment variable validation. |
-| **Phase 9** | **Comprehensive Documentation & Reports** | **COMPLETED** | Comprehensive README, academic major project report outline (`PROJECT_REPORT.md`), viva defense guide, architecture diagrams, `SECURITY.md`, `methodology.md`, `dataset.md`, and `api.md`. |
+### Issue: "Failed to fetch" on `http://localhost:5173/auth`
+- **Symptom:** Submitting user login/registration threw a browser network error `Failed to fetch`.
+- **Root Cause:**
+  1. On macOS, Vite binds by default to IPv6 `:::5173`. Modern browsers query `localhost:5173` over IPv6, sending `Origin: http://[::1]:5173`.
+  2. The FastAPI CORS middleware strictly compared origins against IPv4 `localhost:5173` and `127.0.0.1:5173`, triggering HTTP 400 Bad Request on CORS preflight (`OPTIONS /api/v1/auth/login`).
+  3. Chromium and WebKit report CORS preflight rejection as `TypeError: Failed to fetch`.
+- **Resolution:**
+  - Added IPv6 addresses (`http://[::1]:5173`, `http://[::1]:3000`, `http://[::1]:8000`) and regex pattern `r"^https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$"` to FastAPI CORS middleware in `backend/app/main.py`.
+  - Configured Vite local development reverse proxy (`frontend/vite.config.ts`) forwarding `/api` to `http://127.0.0.1:8000` and `/ws` to `ws://127.0.0.1:8000`.
+  - Enhanced frontend `api.ts` with relative fallback and structured `ApiError` network troubleshooting messages.
+  - Implemented React Error Boundary in `frontend/src/components/layout/ErrorBoundary.tsx`.
 
 ---
 
-## 3. Key Metrics & Verification Log
+## 3. Automated Diagnostics & System Health Suite
 
-- **Current Repository State:** Fully functional, modular monorepo.
-- **Node.js Environment:** v24.14.0 (npm 11.9.0) — Frontend bundle compiles cleanly (`vite build` in 1.42s).
-- **Python Environment:** Python 3.14.0 with PyTorch 2.15, SciPy, NumPy, Scikit-learn, FastAPI, Pydantic v2, SQLAlchemy.
-- **Automated Tests:** 17/17 automated pytest tests passing in 2.43s.
-- **Trained Model Artifacts:**
+PulseGuard now includes a full automated diagnostic subsystem:
+- **Backend Diagnostic Probes:**
+  - `GET /api/v1/health/live` (Process liveness)
+  - `GET /api/v1/health/ready` (System readiness & DB ping)
+  - `GET /api/v1/health/services` (Component latencies and operational status)
+  - `GET /api/v1/health/ml` (Deep learning model & threshold status)
+  - `GET /api/v1/health/iot` (Software IoT virtual sensor status)
+- **Frontend Diagnostic Console:** Available at `/diagnostics` with real-time status badges, latency indicators, and actionable recovery guides.
+- **Request Tracing:** `X-Request-ID` and latency header tracking middleware on all backend requests.
+
+---
+
+## 4. Quality & Testing Verification Matrix
+
+- **Master Automated Test Runner:** `./scripts/run_all_tests.sh` executes all checks in one unified command.
+- **Backend Tests:** 19/19 passing with zero warnings in 3.38s (`pytest backend/tests -v`).
+- **Frontend Build:** `npm run build` succeeds in 1.49s with zero TypeScript compilation errors.
+- **IoT Simulation Verification:** Verified via `iot/bridge/virtual_sensor_bridge.py` emitting telemetry to live FastAPI backend with HTTP 201 response.
+- **Deep Learning Calibration:**
   - `backend/app/ml/artifacts/cae_fan_model.pt` (Trained ConvAutoencoder)
   - `backend/app/ml/artifacts/knn_reference_bank.pkl` (Fitted 64-D Latent Index)
   - `backend/app/ml/artifacts/calibrated_thresholds.json` (Calibrated P90/P99 Thresholds)

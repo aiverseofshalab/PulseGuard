@@ -29,6 +29,72 @@ def test_health_endpoints(client):
     assert res_health.status_code == 200
     assert res_health.json()["status"] == "healthy"
 
+def test_diagnostic_endpoints(client):
+    # Live
+    res_live = client.get("/api/v1/health/live")
+    assert res_live.status_code == 200
+    assert res_live.json()["status"] == "Operational"
+
+    # Ready
+    res_ready = client.get("/api/v1/health/ready")
+    assert res_ready.status_code == 200
+    assert res_ready.json()["status"] == "Operational"
+    assert res_ready.json()["database"] == "Operational"
+
+    # Services Matrix
+    res_services = client.get("/api/v1/health/services")
+    assert res_services.status_code == 200
+    assert res_services.json()["overall_status"] == "Operational"
+    assert "database" in res_services.json()["services"]
+
+    # ML Pipeline
+    res_ml = client.get("/api/v1/health/ml")
+    assert res_ml.status_code == 200
+    assert res_ml.json()["cae_model"]["status"] == "Operational"
+    assert res_ml.json()["cae_model"]["latent_bottleneck_dim"] == 64
+
+    # IoT Diagnostics
+    res_iot = client.get("/api/v1/health/iot")
+    assert res_iot.status_code == 200
+    assert res_iot.json()["hardware_dependency"] == "None (100% Software Simulated)"
+    assert res_iot.json()["tinkercad_firmware_file"] == "Present"
+
+def test_user_registration_and_auth_failures(client):
+    # Unique user registration
+    import uuid
+    test_email = f"user_{uuid.uuid4().hex[:8]}@pulseguard.ai"
+    reg_res = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": test_email,
+            "password": "Password12345!",
+            "full_name": "Test Operator",
+            "role": "operator"
+        }
+    )
+    assert reg_res.status_code == 201
+    assert "access_token" in reg_res.json()
+
+    # Reject duplicate email
+    dup_res = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": test_email,
+            "password": "Password12345!",
+        }
+    )
+    assert dup_res.status_code == 400
+
+    # Reject invalid password
+    bad_login = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_email,
+            "password": "WrongPassword999!"
+        }
+    )
+    assert bad_login.status_code == 401
+
 def test_machine_lifecycle(client, auth_headers):
     # Create Machine
     create_res = client.post(

@@ -1,3 +1,5 @@
+import time
+import uuid
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
@@ -46,10 +48,29 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
-# CORS Middleware
+# Request ID & Latency Logging Middleware
+@app.middleware("http")
+async def add_request_id_and_latency(request: Request, call_next):
+    request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+    start_time = time.perf_counter()
+
+    response = await call_next(request)
+
+    process_time_ms = round((time.perf_counter() - start_time) * 1000.0, 2)
+    response.headers["X-Request-ID"] = request_id
+    response.headers["X-Response-Time-Ms"] = str(process_time_ms)
+
+    if request.url.path not in ["/api/v1/health/live", "/health"]:
+        logger.info(
+            f"[{request_id}] {request.method} {request.url.path} -> {response.status_code} ({process_time_ms} ms)"
+        )
+    return response
+
+# CORS Middleware with dual regex for any local loopback host/port
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

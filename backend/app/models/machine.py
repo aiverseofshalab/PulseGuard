@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, String, Text, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from backend.app.database.session import Base
@@ -14,8 +14,8 @@ class Machine(Base):
     machine_type = Column(String(100), nullable=False)  # fan, pump, valve, slide_rail
     description = Column(Text, nullable=True)
     status = Column(String(50), default="normal", nullable=False)  # normal, warning, critical, offline
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
     user = relationship("User", back_populates="machines")
     analyses = relationship("Analysis", back_populates="machine", cascade="all, delete-orphan", order_by="desc(Analysis.created_at)")

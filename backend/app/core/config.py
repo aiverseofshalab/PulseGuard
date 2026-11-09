@@ -1,26 +1,30 @@
 import os
 from typing import List, Optional
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
+
     APP_NAME: str = "PulseGuard Industrial Acoustic AI"
     APP_VERSION: str = "1.0.0"
-    APP_ENV: str = Field(default="development", env="APP_ENV")
+    APP_ENV: str = "development"
     API_V1_PREFIX: str = "/api/v1"
     
     # Security
-    SECRET_KEY: str = Field(
-        default="pulseguard-super-secret-key-change-in-production-min-32-chars",
-        env="SECRET_KEY"
-    )
+    SECRET_KEY: str = "pulseguard-super-secret-key-change-in-production-min-32-chars"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
     ALGORITHM: str = "HS256"
     
     # CORS
-    ALLOWED_ORIGINS: str = Field(
-        default="http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173",
-        env="ALLOWED_ORIGINS"
+    ALLOWED_ORIGINS: str = (
+        "http://localhost:5173,http://127.0.0.1:5173,http://[::1]:5173,"
+        "http://localhost:3000,http://127.0.0.1:3000,http://[::1]:3000,"
+        "http://localhost:8000,http://127.0.0.1:8000,http://[::1]:8000"
     )
     
     @property
@@ -28,13 +32,10 @@ class Settings(BaseSettings):
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
 
     # Database
-    DATABASE_URL: str = Field(
-        default="sqlite:///./pulseguard.db",
-        env="DATABASE_URL"
-    )
+    DATABASE_URL: str = "sqlite:///./pulseguard.db"
 
     # File uploads
-    MAX_UPLOAD_SIZE_MB: int = Field(default=15, env="MAX_UPLOAD_SIZE_MB")
+    MAX_UPLOAD_SIZE_MB: int = 15
     
     # ML & Audio
     SAMPLE_RATE: int = 16000
@@ -45,29 +46,12 @@ class Settings(BaseSettings):
     F_MAX: float = 8000.0
     
     # Model Artifact Paths
-    MODEL_PATH: str = Field(
-        default="backend/app/ml/artifacts/cae_fan_model.pt",
-        env="MODEL_PATH"
-    )
-    KNN_INDEX_PATH: str = Field(
-        default="backend/app/ml/artifacts/knn_reference_bank.pkl",
-        env="KNN_INDEX_PATH"
-    )
-    THRESHOLDS_CONFIG_PATH: str = Field(
-        default="backend/app/ml/artifacts/calibrated_thresholds.json",
-        env="THRESHOLDS_CONFIG_PATH"
-    )
+    MODEL_PATH: str = "backend/app/ml/artifacts/cae_fan_model.pt"
+    KNN_INDEX_PATH: str = "backend/app/ml/artifacts/knn_reference_bank.pkl"
+    THRESHOLDS_CONFIG_PATH: str = "backend/app/ml/artifacts/calibrated_thresholds.json"
 
     # IoT Telemetry Security
-    IOT_API_KEY: str = Field(
-        default="pulseguard-iot-device-secret-key-demo-2026",
-        env="IOT_API_KEY"
-    )
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        extra = "ignore"
+    IOT_API_KEY: str = "pulseguard-iot-device-secret-key-demo-2026"
 
 settings = Settings()
 

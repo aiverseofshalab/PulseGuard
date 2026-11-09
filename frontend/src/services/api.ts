@@ -10,13 +10,17 @@ import {
   ModelInfo,
 } from "../types";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE_URL !== undefined 
+  ? import.meta.env.VITE_API_BASE_URL 
+  : "";
 
-class ApiError extends Error {
+export class ApiError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  troubleshooting?: string;
+  constructor(message: string, status: number, troubleshooting?: string) {
     super(message);
     this.status = status;
+    this.troubleshooting = troubleshooting;
     this.name = "ApiError";
   }
 }
@@ -47,10 +51,20 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers.set("Content-Type", "application/json");
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+    });
+  } catch (err: any) {
+    const targetDesc = API_BASE ? API_BASE : `${window.location.origin}/api/v1 (proxied to http://127.0.0.1:8000)`;
+    throw new ApiError(
+      `Unable to reach PulseGuard Backend API at ${targetDesc}.`,
+      0,
+      "Ensure the FastAPI server is running on port 8000 (uvicorn backend.app.main:app --port 8000) and that CORS/network access is not blocked."
+    );
+  }
 
   if (response.status === 204) {
     return {} as T;
@@ -62,7 +76,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       const errorData = await response.json();
       errorMessage = errorData.detail || errorData.message || errorMessage;
     } catch {
-      errorMessage = await response.text() || errorMessage;
+      errorMessage = (await response.text()) || errorMessage;
     }
     throw new ApiError(errorMessage, response.status);
   }
@@ -203,14 +217,42 @@ export const api = {
     return request<DashboardSummary>("/dashboard/summary");
   },
 
+  // Diagnostic Endpoints
+  async getLiveHealth(): Promise<any> {
+    return request<any>("/health/live");
+  },
+
+  async getReadyHealth(): Promise<any> {
+    return request<any>("/health/ready");
+  },
+
+  async getServicesHealth(): Promise<any> {
+    return request<any>("/health/services");
+  },
+
+  async getMlHealth(): Promise<any> {
+    return request<any>("/health/ml");
+  },
+
+  async getIotHealth(): Promise<any> {
+    return request<any>("/health/iot");
+  },
+
   getExportCsvUrl(): string {
     const token = getToken();
     return `${API_BASE}/api/v1/reports/export?token=${token || ""}`;
   },
 
   getWebSocketUrl(machineId: string): string {
-    const wsBase = import.meta.env.VITE_WS_BASE_URL || API_BASE.replace(/^http/, "ws");
-    return `${wsBase}/api/v1/telemetry/ws/${machineId}`;
+    if (import.meta.env.VITE_WS_BASE_URL) {
+      return `${import.meta.env.VITE_WS_BASE_URL}/api/v1/telemetry/ws/${machineId}`;
+    }
+    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+    if (API_BASE.startsWith("http")) {
+      const wsHost = API_BASE.replace(/^http(s?):\/\//, "");
+      return `${proto}//${wsHost}/api/v1/telemetry/ws/${machineId}`;
+    }
+    return `${proto}//${window.location.host}/ws/${machineId}`;
   },
 };
 

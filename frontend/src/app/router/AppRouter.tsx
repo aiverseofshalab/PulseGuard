@@ -10,6 +10,7 @@ import { AnalysisPage } from "../../features/analysis/AnalysisPage";
 import { SimulatorPage } from "../../features/simulator/SimulatorPage";
 import { AnalyticsPage } from "../../features/analytics/AnalyticsPage";
 import { ModelInfoPage } from "../../features/model/ModelInfoPage";
+import { DiagnosticsPage } from "../../features/diagnostics/DiagnosticsPage";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -50,6 +51,7 @@ export const AppRouter: React.FC = () => {
         <Route path="/simulator" element={<SimulatorPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/model" element={<ModelInfoPage />} />
+        <Route path="/diagnostics" element={<DiagnosticsPage />} />
       </Route>
 
       {/* Fallback */}

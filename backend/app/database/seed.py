@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import random
 from sqlalchemy.orm import Session
 from backend.app.models.user import User
@@ -78,7 +78,7 @@ def seed_demo_data_if_empty(db: Session):
         db.refresh(m)
 
     # 3. Create realistic historical analyses for the machines over the past 7 days
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     for m in created_machines:
         for day in range(7, 0, -1):
             ts = now - timedelta(days=day, hours=random.randint(1, 10))

@@ -1,30 +1,30 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 class AnalysisMetricResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     reconstruction_error: float
     knn_distance: Optional[float]
     inference_time_ms: float
     feature_metadata: Optional[Dict[str, Any]] = None
 
-    class Config:
-        from_attributes = True
-
 class OperatorNoteCreate(BaseModel):
     note: str = Field(..., min_length=1, max_length=2000)
 
 class OperatorNoteResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     analysis_id: str
     user_id: str
     note: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 class AnalysisResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     machine_id: str
     machine_name: Optional[str] = None
@@ -41,9 +41,6 @@ class AnalysisResponse(BaseModel):
     created_at: datetime
     metrics: Optional[AnalysisMetricResponse] = None
     operator_notes: Optional[List[OperatorNoteResponse]] = []
-
-    class Config:
-        from_attributes = True
 
 class AnalysisVisualizationResponse(BaseModel):
     analysis_id: str

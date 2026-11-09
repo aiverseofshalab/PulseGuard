@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 class UserRegisterRequest(BaseModel):
     email: str = Field(..., min_length=5, max_length=255, description="User email address")
@@ -21,11 +21,10 @@ class TokenResponse(BaseModel):
     role: str
 
 class UserProfileResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     email: str
     full_name: Optional[str]
     role: str
     created_at: datetime
-
-    class Config:
-        from_attributes = True

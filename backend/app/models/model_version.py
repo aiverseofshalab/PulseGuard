@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, String, Boolean, DateTime, JSON
 from backend.app.database.session import Base
 
@@ -13,5 +13,5 @@ class ModelVersion(Base):
     preprocessing_config = Column(JSON, nullable=False)
     threshold_config = Column(JSON, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 

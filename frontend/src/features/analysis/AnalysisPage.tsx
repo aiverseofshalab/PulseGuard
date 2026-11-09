@@ -73,6 +73,20 @@ export const AnalysisPage: React.FC = () => {
     setErrorMsg(null);
   };
 
+  const loadDemoSample = async (samplePath: string, name: string) => {
+    try {
+      setErrorMsg(null);
+      const res = await fetch(samplePath);
+      if (!res.ok) throw new Error("Failed to load sample audio");
+      const blob = await res.blob();
+      const file = new File([blob], name, { type: "audio/wav" });
+      setAudioFile(file);
+      setAudioFileName(name);
+    } catch (err: any) {
+      setErrorMsg("Could not load sample audio file: " + err.message);
+    }
+  };
+
   const handleRunAnalysis = async () => {
     if (!selectedMachineId) {
       setErrorMsg("Please select an industrial machine asset first.");
@@ -202,6 +216,41 @@ export const AnalysisPage: React.FC = () => {
                 className="hidden"
               />
             </label>
+
+            {/* Quick Demo Acoustic Samples */}
+            <div className="pt-3 border-t border-[#1f293d]/60 mt-4">
+              <p className="text-[11px] text-slate-400 mb-2">Or test immediately with calibrated MIMII industrial samples:</p>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => loadDemoSample("/samples/sample_normal_fan.wav", "sample_normal_fan.wav")}
+                  className="px-2.5 py-1 text-[11px] font-mono rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors"
+                >
+                  ✓ Normal Fan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => loadDemoSample("/samples/sample_anomaly_bearing.wav", "sample_anomaly_bearing.wav")}
+                  className="px-2.5 py-1 text-[11px] font-mono rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors"
+                >
+                  ⚠ Bearing Anomaly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => loadDemoSample("/samples/sample_anomaly_rattling.wav", "sample_anomaly_rattling.wav")}
+                  className="px-2.5 py-1 text-[11px] font-mono rounded bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors"
+                >
+                  ⚠ Rattling Anomaly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => loadDemoSample("/samples/sample_anomaly_unbalance.wav", "sample_anomaly_unbalance.wav")}
+                  className="px-2.5 py-1 text-[11px] font-mono rounded bg-purple-500/10 text-purple-400 border border-purple-500/30 hover:bg-purple-500/20 transition-colors"
+                >
+                  ⚠ Unbalance Anomaly
+                </button>
+              </div>
+            </div>
           </div>
         ) : (
           <AudioRecorder onAudioReady={handleAudioFromRecorder} targetDurationSeconds={3} />

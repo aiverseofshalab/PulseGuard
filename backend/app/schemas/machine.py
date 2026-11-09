@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 class MachineCreateRequest(BaseModel):
     machine_identifier: str = Field(..., min_length=2, max_length=100, description="Unique asset/serial identifier (e.g. FAN-BAY-01)")
@@ -15,6 +15,8 @@ class MachineUpdateRequest(BaseModel):
     status: Optional[str] = None
 
 class MachineResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     user_id: str
     machine_identifier: str
@@ -26,9 +28,6 @@ class MachineResponse(BaseModel):
     updated_at: datetime
     total_analyses: Optional[int] = 0
     latest_score: Optional[float] = None
-
-    class Config:
-        from_attributes = True
 
 class MachineListResponse(BaseModel):
     items: List[MachineResponse]

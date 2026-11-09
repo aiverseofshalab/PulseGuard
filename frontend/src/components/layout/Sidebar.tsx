@@ -7,6 +7,7 @@ import {
   Cpu,
   TrendingUp,
   BrainCircuit,
+  Activity,
   ExternalLink,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { name: "Virtual IoT Simulator", path: "/simulator", icon: Cpu },
   { name: "Trends & History", path: "/analytics", icon: TrendingUp },
   { name: "Model Architecture", path: "/model", icon: BrainCircuit },
+  { name: "System Diagnostics", path: "/diagnostics", icon: Activity },
 ];
 
 export const Sidebar: React.FC = () => {

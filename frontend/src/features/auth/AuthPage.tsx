@@ -12,6 +12,7 @@ export const AuthPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [troubleshooting, setTroubleshooting] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   if (isAuthenticated) {
@@ -21,6 +22,7 @@ export const AuthPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    setTroubleshooting(null);
     setSubmitting(true);
 
     try {
@@ -32,6 +34,7 @@ export const AuthPage: React.FC = () => {
       navigate("/dashboard");
     } catch (err: any) {
       setErrorMessage(err.message || "Authentication failed. Please verify your credentials.");
+      setTroubleshooting(err.troubleshooting || null);
     } finally {
       setSubmitting(false);
     }
@@ -39,12 +42,14 @@ export const AuthPage: React.FC = () => {
 
   const handleDemoLogin = async () => {
     setErrorMessage(null);
+    setTroubleshooting(null);
     setSubmitting(true);
     try {
       await demoLogin();
       navigate("/dashboard");
     } catch (err: any) {
       setErrorMessage(err.message || "Demo login failed.");
+      setTroubleshooting(err.troubleshooting || null);
     } finally {
       setSubmitting(false);
     }
@@ -87,9 +92,16 @@ export const AuthPage: React.FC = () => {
           </div>
 
           {errorMessage && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{errorMessage}</span>
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs space-y-1">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span className="font-semibold">{errorMessage}</span>
+              </div>
+              {troubleshooting && (
+                <div className="text-[11px] text-slate-400 pl-6 border-t border-red-500/20 pt-1">
+                  💡 {troubleshooting}
+                </div>
+              )}
             </div>
           )}
 

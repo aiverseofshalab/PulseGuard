@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -72,7 +72,7 @@ async def trigger_machine_scenario(
         operating_status=reading["operating_status"],
         is_simulated=True,
         source="software_simulator",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
     )
     db.add(telemetry)
     db.commit()

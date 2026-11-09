@@ -1,6 +1,6 @@
 import asyncio
 from typing import List, Dict, Set
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, Query
 from sqlalchemy.orm import Session
 
@@ -73,7 +73,7 @@ async def ingest_telemetry(
         operating_status=req.operating_status or "running",
         is_simulated=True,
         source=req.source or "tinkercad_bridge",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
     )
     db.add(telemetry)
     db.commit()
@@ -139,7 +139,7 @@ def get_latest_telemetry(
             operating_status="running",
             is_simulated=True,
             source="software_simulator",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
         )
 
     return TelemetryResponse(
@@ -288,7 +288,7 @@ def get_health_fusion_assessment(
         combined_health_state=combined_state,
         diagnostic_explanation=explanation,
         evidence_breakdown=evidence,
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
     )
 
 @router.websocket("/ws/{machine_id}")
