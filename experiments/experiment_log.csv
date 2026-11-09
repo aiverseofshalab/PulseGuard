@@ -1,0 +1,2 @@
+timestamp,model,dataset,epochs,best_val_loss,roc_auc_cae,pr_auc_cae,roc_auc_knn,pr_auc_knn,precision,recall,f1_score,fpr,avg_latency_ms
+2026-11-09 19:09:29,ConvAutoencoder-2D,MIMII_Fan_Synthetic,25,0.00277,1.0,1.0,1.0,1.0,0.8333,1.0,0.9091,0.3,1.54

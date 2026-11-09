@@ -1,0 +1,32 @@
+{
+  "fan": {
+    "warning_threshold": 0.003104,
+    "critical_threshold": 0.003168,
+    "knn_warning_threshold": 0.7051,
+    "knn_critical_threshold": 0.8521
+  },
+  "pump": {
+    "warning_threshold": 0.003476,
+    "critical_threshold": 0.003643,
+    "knn_warning_threshold": 0.7615,
+    "knn_critical_threshold": 0.9373
+  },
+  "valve": {
+    "warning_threshold": 0.002793,
+    "critical_threshold": 0.002915,
+    "knn_warning_threshold": 0.6698,
+    "knn_critical_threshold": 0.8095
+  },
+  "slide_rail": {
+    "warning_threshold": 0.003259,
+    "critical_threshold": 0.003422,
+    "knn_warning_threshold": 0.7192,
+    "knn_critical_threshold": 0.8947
+  },
+  "default": {
+    "warning_threshold": 0.003104,
+    "critical_threshold": 0.003168,
+    "knn_warning_threshold": 0.7051,
+    "knn_critical_threshold": 0.8521
+  }
+}

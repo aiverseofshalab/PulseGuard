@@ -1,0 +1,41 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm
+
+# Databases and Local Storage
+*.db
+*.sqlite3
+pulseguard.db
+uploads/
+temp_audio/
+
+# Environment Variables
+.env
+.env.production
+!.env.example
+
+# Logs and OS
+*.log
+.DS_Store
+Thumbs.db
+
+# Model Checkpoints (large binary training outputs)
+*.pt
+*.pth
+!backend/app/ml/artifacts/calibrated_thresholds.json

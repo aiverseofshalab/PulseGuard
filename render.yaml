@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: pulseguard-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: https://pulseguard.vercel.app,http://localhost:5173
+      - key: IOT_API_KEY
+        sync: false
