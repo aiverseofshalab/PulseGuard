@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import os
 import random
 from sqlalchemy.orm import Session
 from backend.app.models.user import User
@@ -10,7 +11,7 @@ from backend.app.models.diagnostic import DiagnosticSnapshot
 from backend.app.core.security import get_password_hash
 
 DEMO_USER_EMAIL = "demo@pulseguard.ai"
-DEMO_USER_PASSWORD = "IndustrialDemo2026!"
+DEMO_USER_PASSWORD = os.getenv("DEMO_USER_PASSWORD")
 
 def seed_demo_data_if_empty(db: Session):
     existing_user = db.query(User).filter(User.email == DEMO_USER_EMAIL).first()
@@ -90,6 +91,13 @@ def seed_demo_data_if_empty(db: Session):
             ))
             db.commit()
         return existing_user
+
+    if not DEMO_USER_PASSWORD:
+        print(
+            "[WARNING] DEMO_USER_PASSWORD is not configured. "
+            "Skipping initial demo account and demo asset seeding."
+        )
+        return None
 
     print("[INFO] Seeding initial industrial demonstration records...")
 

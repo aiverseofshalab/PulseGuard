@@ -37,6 +37,7 @@ Thumbs.db
 
 # Model Checkpoints (large binary training outputs)
 *.pt
+!backend/app/ml/artifacts/cae_fan_model.pt
 *.pth
 !backend/app/ml/artifacts/calibrated_thresholds.json
 
