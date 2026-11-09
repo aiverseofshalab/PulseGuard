@@ -42,3 +42,4 @@ PulseGuard's `training/scripts/prepare_mimii_data.py` implements a physics-based
    - **Bearing Friction:** High-frequency impulsive acoustic bursts (2500–4500 Hz) modulated at ball-pass outer race frequencies (BPFO).
    - **Blade Unbalance:** Amplitude modulation of the $1\times$ fundamental shaft frequency.
    - **Mechanical Rattling:** Impact pulse trains with exponential resonant decay.
+

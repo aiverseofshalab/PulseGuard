@@ -304,3 +304,4 @@ async def websocket_telemetry_stream(websocket: WebSocket, machine_id: str):
         ws_manager.disconnect(machine_id, websocket)
     except Exception:
         ws_manager.disconnect(machine_id, websocket)
+

@@ -37,3 +37,4 @@
 - **Context:** Combining audio anomaly scores with simulated IoT telemetry could easily lead to misleading claims if not properly decoupled.
 - **Decision:** The audio acoustic anomaly score remains the authoritative primary deep-learning metric. IoT sensor readings (temperature, vibration proxy, RPM) act as complementary contextual evidence. The diagnostic engine outputs a transparent, rule-based explanation detailing exact contributions from acoustic residuals vs. telemetry deviations.
 - **Consequences:** Prevents false claims of failure probability while delivering actionable, explainable maintenance recommendations for plant engineers.
+

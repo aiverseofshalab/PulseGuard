@@ -58,3 +58,4 @@ class AnalysisVisualizationResponse(BaseModel):
 class AnalysisListResponse(BaseModel):
     items: List[AnalysisResponse]
     total: int
+

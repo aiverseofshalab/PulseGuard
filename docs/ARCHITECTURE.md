@@ -191,3 +191,4 @@ erDiagram
    - File size caps (15 MB).
    - In-memory temporary buffer processing; no persistent raw files saved to disk without sanitization.
 3. **CORS & Headers:** Restricted origins, Content-Security-Policy headers, rate-limiting on inference and ingestion endpoints.
+

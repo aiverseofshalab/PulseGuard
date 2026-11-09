@@ -60,3 +60,4 @@ def verify_iot_api_key(x_api_key: Optional[str] = Header(None)) -> bool:
             detail="Invalid IoT device API key",
         )
     return True
+

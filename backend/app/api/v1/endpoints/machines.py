@@ -193,3 +193,4 @@ def delete_machine(
     db.delete(machine)
     db.commit()
     return None
+

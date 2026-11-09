@@ -105,3 +105,4 @@ async def trigger_machine_scenario(
         source=telemetry.source,
         timestamp=telemetry.timestamp,
     )
+

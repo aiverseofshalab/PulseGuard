@@ -92,3 +92,4 @@ export const SpectrogramViewer: React.FC<SpectrogramViewerProps> = ({
     </div>
   );
 };
+

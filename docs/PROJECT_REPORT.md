@@ -78,3 +78,4 @@
 > 1. Root Mean Square (RMS) energy threshold to detect disconnected or silent microphones.
 > 2. Amplitude clipping ratio test (>1.5% clipped samples) to identify acoustic distortion.
 > If a recording fails these tests, the system tags the state as `insufficient_quality` rather than flagging it as a machine anomaly.
+

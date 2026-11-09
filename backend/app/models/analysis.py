@@ -47,3 +47,4 @@ class OperatorNote(Base):
 
     analysis = relationship("Analysis", back_populates="operator_notes")
     user = relationship("User", back_populates="operator_notes")
+

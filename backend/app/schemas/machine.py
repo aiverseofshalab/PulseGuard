@@ -33,3 +33,4 @@ class MachineResponse(BaseModel):
 class MachineListResponse(BaseModel):
     items: List[MachineResponse]
     total: int
+

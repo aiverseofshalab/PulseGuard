@@ -79,3 +79,4 @@ def get_dashboard_summary(
         machine_status_breakdown=breakdown,
         system_health_status=health,
     )
+

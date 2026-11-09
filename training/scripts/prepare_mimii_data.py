@@ -139,3 +139,4 @@ def generate_mimii_synthetic_dataset(output_dir: str = "data/mimii_fan"):
 
 if __name__ == "__main__":
     generate_mimii_synthetic_dataset()
+

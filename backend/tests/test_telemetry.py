@@ -77,3 +77,4 @@ def test_health_fusion(client, auth_headers):
     fusion = res.json()
     assert "combined_health_state" in fusion
     assert len(fusion["evidence_breakdown"]) > 0
+

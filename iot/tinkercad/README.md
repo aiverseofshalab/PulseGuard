@@ -66,3 +66,4 @@ Because web browsers run Tinkercad within a sandboxed WebAssembly / canvas ifram
 - Parses serial data if running from a connected virtual COM port, OR
 - Seamlessly emulates the exact Tinkercad Uno JSON telemetry stream.
 - Streams telemetry records to the FastAPI backend at `POST /api/v1/telemetry/ingest`.
+

@@ -14,3 +14,4 @@ class ModelVersion(Base):
     threshold_config = Column(JSON, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+

@@ -20,3 +20,4 @@ api_router.include_router(simulator.router, prefix="/simulator", tags=["Virtual 
 api_router.include_router(model_info.router, prefix="/model", tags=["Deep Learning Model Specs"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard Aggregates"])
 api_router.include_router(reports.router, prefix="/reports", tags=["Reports & Export"])
+

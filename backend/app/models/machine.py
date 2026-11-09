@@ -20,3 +20,4 @@ class Machine(Base):
     user = relationship("User", back_populates="machines")
     analyses = relationship("Analysis", back_populates="machine", cascade="all, delete-orphan", order_by="desc(Analysis.created_at)")
     telemetry_logs = relationship("MachineTelemetry", back_populates="machine", cascade="all, delete-orphan", order_by="desc(MachineTelemetry.timestamp)")
+

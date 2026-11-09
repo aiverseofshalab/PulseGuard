@@ -40,3 +40,4 @@ def get_model_health():
         "thresholds_loaded": bool(inference_service.calibrated_thresholds),
         "device": str(inference_service.device),
     }
+

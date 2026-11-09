@@ -214,3 +214,4 @@ class ModelInferenceService:
         }
 
 inference_service = ModelInferenceService()
+

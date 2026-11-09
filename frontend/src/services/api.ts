@@ -213,3 +213,4 @@ export const api = {
     return `${wsBase}/api/v1/telemetry/ws/${machineId}`;
   },
 };
+

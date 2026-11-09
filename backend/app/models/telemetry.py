@@ -18,3 +18,4 @@ class MachineTelemetry(Base):
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
 
     machine = relationship("Machine", back_populates="telemetry_logs")
+

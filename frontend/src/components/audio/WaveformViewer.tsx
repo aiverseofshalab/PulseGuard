@@ -68,3 +68,4 @@ export const WaveformViewer: React.FC<WaveformViewerProps> = ({
     </div>
   );
 };
+

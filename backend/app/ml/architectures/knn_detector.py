@@ -56,3 +56,4 @@ class KNNDetector:
         detector.is_fitted = True
         detector.reference_embeddings_count = data.get("reference_embeddings_count", 0)
         return detector
+

@@ -51,3 +51,4 @@ PulseGuard is designed with defence-in-depth across the API, machine learning in
 1. Enforce HTTPS / TLS 1.3 on reverse proxies (e.g. Render / Cloudflare).
 2. Set `SECRET_KEY` and `IOT_API_KEY` to high-entropy strings (minimum 64 hex characters) generated via `openssl rand -hex 32`.
 3. Configure rate-limiting filters (e.g. `slowapi` or Cloudflare WAF) on `POST /api/v1/analyses` to limit audio uploads to 20 requests per minute per IP.
+

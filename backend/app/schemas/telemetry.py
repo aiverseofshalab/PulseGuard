@@ -43,3 +43,4 @@ class HealthFusionAssessment(BaseModel):
     diagnostic_explanation: str
     evidence_breakdown: List[str]
     timestamp: datetime
+

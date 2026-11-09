@@ -77,3 +77,4 @@ def test_clipped_audio_detection(processor):
     waveform, meta = processor.validate_and_load_wav(clipped_bytes)
 
     assert meta["clipping_ratio"] > 0.0
+

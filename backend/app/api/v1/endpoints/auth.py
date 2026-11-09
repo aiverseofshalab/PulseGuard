@@ -69,3 +69,4 @@ def login(req: UserLoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserProfileResponse)
 def get_me(current_user: User = Depends(get_current_user)):
     return current_user
+

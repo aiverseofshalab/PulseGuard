@@ -120,3 +120,4 @@
 - [ ] `docs/api.md` (OpenAPI specification & endpoint documentation).
 - [ ] `docs/iot_simulation.md` (Tinkercad circuit diagram, Arduino Uno C++ code, virtual bridge architecture).
 - [ ] `docs/PROJECT_REPORT.md` (Major project report outline and viva defense guide).
+

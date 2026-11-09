@@ -144,3 +144,4 @@ def seed_demo_data_if_empty(db: Session):
     db.commit()
     print("[INFO] Seeded demo account, 4 industrial machines, and historical monitoring trends.")
     return user
+

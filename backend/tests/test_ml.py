@@ -72,3 +72,4 @@ def test_anomaly_scorer():
         audio_quality="silent",
     )
     assert status_q == "insufficient_quality"
+

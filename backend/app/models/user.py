@@ -17,3 +17,4 @@ class User(Base):
     machines = relationship("Machine", back_populates="user", cascade="all, delete-orphan")
     analyses = relationship("Analysis", back_populates="user", cascade="all, delete-orphan")
     operator_notes = relationship("OperatorNote", back_populates="user", cascade="all, delete-orphan")
+

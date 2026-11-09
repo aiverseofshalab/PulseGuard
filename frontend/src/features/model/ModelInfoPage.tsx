@@ -190,3 +190,4 @@ export const ModelInfoPage: React.FC = () => {
     </div>
   );
 };
+

@@ -39,3 +39,4 @@ Thumbs.db
 *.pt
 *.pth
 !backend/app/ml/artifacts/calibrated_thresholds.json
+

@@ -72,3 +72,4 @@ class ConvAutoencoder(nn.Module):
         z = self.encode(x)
         x_recon = self.decode(z)
         return x_recon, z
+

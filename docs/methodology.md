@@ -73,3 +73,4 @@ $$\text{Status} = \begin{cases}
 \text{Warning}, & \tau_{warn} < \text{Error} \le \tau_{crit} \\ 
 \text{Critical}, & \text{Error} > \tau_{crit} 
 \end{cases}$$
+

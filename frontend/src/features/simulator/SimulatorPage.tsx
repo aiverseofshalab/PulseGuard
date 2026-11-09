@@ -470,3 +470,4 @@ export const SimulatorPage: React.FC = () => {
     </div>
   );
 };
+
